@@ -7,7 +7,10 @@ const { assign } = require('power-assign');
 
 // try to find an id property, otherwise just use the index in the array
 const objectHash = (obj, idx) => obj._id || obj.id || `$$index: ${idx}`;
-const diffPatcher = require('jsondiffpatch').create({ objectHash });
+const diffPatcher = require('jsondiffpatch').create({
+    objectHash,
+    textDiff: { minLength: 100000 }
+});
 
 const History = require('./diffHistoryModel').model;
 
@@ -33,8 +36,11 @@ function checkRequired(opts, queryObject, updatedObject) {
 }
 
 function saveDiffObject(currentObject, original, updated, opts, queryObject) {
-    const { __user: user, __reason: reason, __session: session } =
-        (queryObject && queryObject.options) || currentObject;
+    const {
+        __user: user,
+        __reason: reason,
+        __session: session
+    } = (queryObject && queryObject.options) || currentObject;
 
     let diff = diffPatcher.diff(
         JSON.parse(JSON.stringify(original)),
